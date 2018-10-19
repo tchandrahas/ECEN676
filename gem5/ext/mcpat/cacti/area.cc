@@ -1,7 +1,7 @@
 /*****************************************************************************
- *                                McPAT/CACTI
+ *                                CACTI 7.0
  *                      SOFTWARE LICENSE AGREEMENT
- *            Copyright 2012 Hewlett-Packard Development Company, L.P.
+ *            Copyright 2015 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,15 +31,14 @@
 
 
 
-#include <cassert>
-#include <cmath>
-#include <iostream>
-
 #include "area.h"
-#include "basic_circuit.h"
 #include "component.h"
 #include "decoder.h"
 #include "parameter.h"
+#include "basic_circuit.h"
+#include <iostream>
+#include <math.h>
+#include <assert.h>
 
 using namespace std;
 

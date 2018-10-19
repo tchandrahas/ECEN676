@@ -1,8 +1,7 @@
 /*****************************************************************************
- *                                McPAT/CACTI
+ *                                CACTI 7.0
  *                      SOFTWARE LICENSE AGREEMENT
- *            Copyright 2012 Hewlett-Packard Development Company, L.P.
- *            Copyright (c) 2010-2013 Advanced Micro Devices, Inc.
+ *            Copyright 2015 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,18 +25,18 @@
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
 
 #ifndef __CONST_H__
 #define __CONST_H__
 
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <math.h>
 
 /*  The following are things you might want to change
  *  when compiling
@@ -49,9 +48,9 @@
 
 /*
 was: #define ADDRESS_BITS 32
-now: I'm using 42 bits as in the Power4,
-since that's bigger then the 36 bits on the Pentium 4
-and 40 bits on the Opteron
+now: 42 bits as in the Power4
+This is 36 bits in Pentium 4
+and 40 bits in Opteron.
 */
 const int ADDRESS_BITS = 42;
 
@@ -121,7 +120,7 @@ const double WmuxdrvNANDp = 0;
 //int (x) with (int) (x+EPSILON) where EPSILON is 0.5. This would fix such problems. Note that
 //this works only when x is an integer >= 0.
 /*
- * Sheng thinks this is more a solution to solve the simple truncate problem
+ *  thinks this is more a solution to solve the simple truncate problem
  * (http://www.cs.tut.fi/~jkorpela/round.html) rather than the problem mentioned above.
  * Unfortunately, this solution causes nasty bugs (different results when using O0 and O3).
  * Moreover, round is not correct in CACTI since when an extra fraction of bit/line is needed,
@@ -153,7 +152,8 @@ const double WmuxdrvNANDp = 0;
 //0 = Aggressive projections, 1 = Conservative projections
 #define NUMBER_WIRE_TYPES 4 //local, semi-global and global
 //1 = 'Semi-global' wire type, 2 = 'Global' wire type
-
+#define NUMBER_TSV_TYPES 3
+//0 = ITRS projected fine TSV type, 1 = Industrial reported large TSV type, 2 = TBD
 
 const int dram_cell_tech_flavor = 3;
 
@@ -250,20 +250,23 @@ const double    bit_to_byte  = 8.0;
 //  v    : vertical or velocity
 
 
-enum ram_cell_tech_type_num {
-    itrs_hp   = 0,
-    itrs_lstp = 1,
-    itrs_lop  = 2,
-    lp_dram   = 3,
-    comm_dram = 4
+enum ram_cell_tech_type_num
+{
+  itrs_hp   = 0,
+  itrs_lstp = 1,
+  itrs_lop  = 2,
+  lp_dram   = 3,
+  comm_dram = 4
 };
 
-const double pppm[4]      = {1, 1, 1, 1};
-const double pppm_lkg[4]  = {0, 1, 1, 0};
-const double pppm_dyn[4]  = {1, 0, 0, 0};
-const double pppm_Isub[4] = {0, 1, 0, 0};
-const double pppm_Ig[4]   = {0, 0, 1, 0};
-const double pppm_sc[4]   = {0, 0, 0, 1};
+const double pppm[4]      = {1,1,1,1};
+const double pppm_lkg[4]  = {0,1,1,0};
+const double pppm_dyn[4]  = {1,0,0,0};
+const double pppm_Isub[4] = {0,1,0,0};
+const double pppm_Ig[4]   = {0,0,1,0};
+const double pppm_sc[4]   = {0,0,0,1};
+
+const double Ilinear_to_Isat_ratio =2.0;
 
 
 

@@ -1,7 +1,7 @@
 /*****************************************************************************
- *                                McPAT/CACTI
+ *                                CACTI 7.0
  *                      SOFTWARE LICENSE AGREEMENT
- *            Copyright 2012 Hewlett-Packard Development Company, L.P.
+ *            Copyright 2015 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,11 +34,12 @@
 #define __IO_H__
 
 
-#include "cacti_interface.h"
 #include "const.h"
+#include "cacti_interface.h"
 
-void output_data_csv(const uca_org_t & fin_res);
+
+void output_data_csv(const uca_org_t & fin_res, string fn="out.csv");
 void output_UCA(uca_org_t * fin_res);
-
+void output_data_csv_3dd(const uca_org_t & fin_res);
 
 #endif

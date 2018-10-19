@@ -1,7 +1,7 @@
 /*****************************************************************************
- *                                McPAT/CACTI
+ *                                CACTI 7.0
  *                      SOFTWARE LICENSE AGREEMENT
- *            Copyright 2012 Hewlett-Packard Development Company, L.P.
+ *            Copyright 2015 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,14 +33,12 @@
 #define __ARBITER__
 
 #include <assert.h>
-
 #include <iostream>
-
 #include "basic_circuit.h"
 #include "cacti_interface.h"
 #include "component.h"
-#include "mat.h"
 #include "parameter.h"
+#include "mat.h"
 #include "wire.h"
 
 class Arbiter : public Component
@@ -50,7 +48,7 @@ class Arbiter : public Component
       double Req,
       double flit_sz,
       double output_len,
-      TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
+      /*TechnologyParameter::*/DeviceType *dt = &(g_tp.peri_global));
     ~Arbiter();
 
     void print_arbiter();
@@ -70,7 +68,7 @@ class Arbiter : public Component
     double flit_size;
     double NTtr, PTtr;
     double o_len;
-    TechnologyParameter::DeviceType *deviceType;
+    /*TechnologyParameter::*/DeviceType *deviceType;
     double TriS1, TriS2;
     double min_w_pmos, Vdd;
 

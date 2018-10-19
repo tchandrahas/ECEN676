@@ -1,8 +1,7 @@
 /*****************************************************************************
- *                                McPAT/CACTI
+ *                                CACTI 7.0
  *                      SOFTWARE LICENSE AGREEMENT
- *            Copyright 2012 Hewlett-Packard Development Company, L.P.
- *            Copyright (c) 2010-2013 Advanced Micro Devices, Inc.
+ *            Copyright 2015 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,7 +25,7 @@
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
 
@@ -37,11 +36,13 @@
 
 #include "component.h"
 #include "decoder.h"
-#include "subarray.h"
 #include "wire.h"
+#include "subarray.h"
+#include "powergating.h"
 
-class Mat : public Component {
-public:
+class Mat : public Component
+{
+  public:
     Mat(const DynamicParameter & dyn_p);
     ~Mat();
     double compute_delays(double inrisetime);  // return outrisetime
@@ -101,13 +102,13 @@ public:
     double   delay_hit_miss;
 
     Subarray subarray;
-    powerDef power_bitline, power_searchline, power_matchline;
+    powerDef power_bitline, power_searchline, power_matchline, power_bitline_gated;
     double   per_bitline_read_energy;
     int      deg_bl_muxing;
     int      num_act_mats_hor_dir;
     double   delay_writeback;
-    Area     cell, cam_cell;
-    bool     is_dram, is_fa, pure_cam, camFlag;
+    Area     cell,cam_cell;
+    bool     is_dram,is_fa, pure_cam, camFlag;
     int      num_mats;
     powerDef power_sa;
     double   delay_sa;
@@ -126,15 +127,42 @@ public:
     uint32_t num_subarrays_per_mat;  // the number of subarrays in a mat
     uint32_t num_subarrays_per_row;  // the number of subarrays in a row of a mat
 
+    double  array_leakage;
+    double  wl_leakage;
+    double  cl_leakage;
 
-private:
+    Sleep_tx * sram_sleep_tx;
+    Sleep_tx * wl_sleep_tx;
+    Sleep_tx * cl_sleep_tx;
+
+    powerDef array_wakeup_e;
+    double   array_wakeup_t;
+    double   array_sleep_tx_area;
+
+    powerDef blfloating_wakeup_e;
+    double   blfloating_wakeup_t;
+    double   blfloating_sleep_tx_area;
+
+    powerDef wl_wakeup_e;
+    double   wl_wakeup_t;
+    double   wl_sleep_tx_area;
+
+    powerDef cl_wakeup_e;
+    double   cl_wakeup_t;
+    double   cl_sleep_tx_area;
+
+    double compute_bitline_delay(double inrisetime);
+    double compute_sa_delay(double inrisetime);
+    double compute_subarray_out_drv(double inrisetime);
+
+  private:
     double compute_bit_mux_sa_precharge_sa_mux_wr_drv_wr_mux_h();
     double width_write_driver_or_write_mux();
     double compute_comparators_height(int tagbits, int number_ways_in_mat, double subarray_mem_cell_area_w);
     double compute_cam_delay(double inrisetime);
-    double compute_bitline_delay(double inrisetime);
-    double compute_sa_delay(double inrisetime);
-    double compute_subarray_out_drv(double inrisetime);
+    //double compute_bitline_delay(double inrisetime);
+    //double compute_sa_delay(double inrisetime);
+    //double compute_subarray_out_drv(double inrisetime);
     double compute_comparator_delay(double inrisetime);
 
     int RWP;

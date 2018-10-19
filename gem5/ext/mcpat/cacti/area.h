@@ -1,7 +1,7 @@
 /*****************************************************************************
- *                                McPAT/CACTI
+ *                                CACTI 7.0
  *                      SOFTWARE LICENSE AGREEMENT
- *            Copyright 2012 Hewlett-Packard Development Company, L.P.
+ *            Copyright 2015 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,8 @@
 #ifndef __AREA_H__
 #define __AREA_H__
 
-#include "basic_circuit.h"
 #include "cacti_interface.h"
+#include "basic_circuit.h"
 
 using namespace std;
 

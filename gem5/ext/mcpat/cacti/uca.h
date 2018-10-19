@@ -1,8 +1,7 @@
 /*****************************************************************************
- *                                McPAT/CACTI
+ *                                CACTI 7.0
  *                      SOFTWARE LICENSE AGREEMENT
- *            Copyright 2012 Hewlett-Packard Development Company, L.P.
- *            Copyright (c) 2010-2013 Advanced Micro Devices, Inc.
+ *            Copyright 2015 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,7 +25,7 @@
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
 
@@ -38,11 +37,17 @@
 #include "area.h"
 #include "bank.h"
 #include "component.h"
-#include "htree2.h"
 #include "parameter.h"
+#include "htree2.h"
+#include "memorybus.h"
+#include "basic_circuit.h"
+#include "cacti_interface.h"
 
-class UCA : public Component {
-public:
+
+
+class UCA : public Component
+{
+  public:
     UCA(const DynamicParameter & dyn_p);
     ~UCA();
     double compute_delays(double inrisetime);  // returns outrisetime
@@ -57,6 +62,10 @@ public:
     Htree2   * htree_in_search;
     Htree2   * htree_out_search;
 
+    Memorybus * membus_RAS;
+    Memorybus * membus_CAS;
+    Memorybus * membus_data;
+
     powerDef power_routing_to_bank;
 
     uint32_t nbanks;
@@ -66,11 +75,9 @@ public:
     int   num_do_b_bank;
     int   num_si_b_bank;
     int   num_so_b_bank;
-    int RWP;
-    int ERP;
-    int EWP;
-    int SCHP;
+    int   RWP, ERP, EWP,SCHP;
     double area_all_dataramcells;
+    double total_area_per_die;
 
     double dyn_read_energy_from_closed_page;
     double dyn_read_energy_from_open_page;
@@ -92,6 +99,17 @@ public:
     double access_time;
     double precharge_delay;
     double multisubbank_interleave_cycle_time;
+
+    double t_RAS, t_CAS, t_RCD, t_RC, t_RP, t_RRD;
+    double activate_power, read_power, write_power;
+
+	double delay_TSV_tot, area_TSV_tot, dyn_pow_TSV_tot, dyn_pow_TSV_per_access;
+	unsigned int num_TSV_tot;
+	unsigned int comm_bits, row_add_bits, col_add_bits, data_bits;
+	double area_lwl_drv, area_row_predec_dec, area_col_predec_dec,
+	area_subarray, area_bus, area_address_bus, area_data_bus, area_data_drv, area_IOSA, area_sense_amp,
+	area_per_bank;
+
 };
 
 #endif

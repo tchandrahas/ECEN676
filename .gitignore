@@ -8,7 +8,7 @@ cscope.out
 *~
 .*.swp
 m5out
-src/doxygen
+gem5/src/doxygen
 gem5/ext/dramsim2/DRAMSim2
 gem5/ext/mcpat/regression/*/*.out
 gem5/util/m5/*.o

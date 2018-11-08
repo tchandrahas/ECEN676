@@ -66,8 +66,8 @@ def config_cache(options, system):
             O3_ARM_v7a_DCache, O3_ARM_v7a_ICache, O3_ARM_v7aL2, \
             O3_ARM_v7aWalkCache
     else:
-        dcache_class, icache_class, l2_cache_class, walk_cache_class = \
-            L1_DCache, L1_ICache, L2Cache, None
+        dcache_class, icache_class, l2_cache_class, l3_cache_class, walk_cache_class = \
+            L1_DCache, L1_ICache, L2Cache, L3Cache, None
 
         if buildEnv['TARGET_ISA'] == 'x86':
             walk_cache_class = PageTableWalkerCache
@@ -89,10 +89,14 @@ def config_cache(options, system):
         system.l2 = l2_cache_class(clk_domain=system.cpu_clk_domain,
                                    size=options.l2_size,
                                    assoc=options.l2_assoc)
+       system.l3 = l3_cache_class(clk_domain=system.cpu_clk_domain,size=options.l2_size,assoc=options.l2_assoc)
 
         system.tol2bus = L2XBar(clk_domain = system.cpu_clk_domain)
+        system.tol3bus = L3XBar(clk_domain = system.cpu_clk_domain)
         system.l2.cpu_side = system.tol2bus.master
-        system.l2.mem_side = system.membus.slave
+        system.l2.mem_side = system.tol3bus.slave
+        system.l3.cpu_side = system.tol3bus.master
+        system.l3.mem_side = system.membus.slave
 
     if options.memchecker:
         system.memchecker = MemChecker()
@@ -159,6 +163,8 @@ def config_cache(options, system):
         system.cpu[i].createInterruptController()
         if options.l2cache:
             system.cpu[i].connectAllPorts(system.tol2bus, system.membus)
+        elif options.l3cache:
+            system.cpu[i].connectAllPorts(system.tol3bus,system.tol2bus,system.membus)
         elif options.external_memory_system:
             system.cpu[i].connectUncachedPorts(system.membus)
         else:

@@ -145,7 +145,7 @@ def config_cache(options, system):
             system.cpu[i].dcache_port = dcache.cpu_side
             system.cpu[i]._cached_ports = ['icache.mem_side', 'dcache.mem_side']
             if buildEnv['TARGET_ISA'] in ['x86', 'arm']:
-                if iwc and dwc:
+                if iwalkcache and dwalkcache:
                     system.cpu[i].itb_walker_cache = iwalkcache
                     system.cpu[i].dtb_walker_cache = dwalkcache
                     system.cpu[i].itb.walker.port = iwalkcache.cpu_side

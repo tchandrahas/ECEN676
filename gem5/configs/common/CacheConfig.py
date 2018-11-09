@@ -138,8 +138,7 @@ def config_cache(options, system):
             # When connecting the caches, the clock is also inherited
             # from the CPU in question
             system.cpu[i].addPrivateSplitL1Caches(icache, dcache,
-                                                  iwalkcache, dwalkcache,
-                                                  system.tol2bus)
+                                                  iwalkcache, dwalkcache)
 
             if options.memchecker:
                 # The mem_side ports of the caches haven't been connected yet.
@@ -165,6 +164,8 @@ def config_cache(options, system):
                         ExternalCache("cpu%d.dcache" % i))
 
         system.cpu[i].createInterruptController()
+        if options.l3cache:
+            system.cpu[i].connectAllports(system.tol2bus,system.membus)
         elif options.l2cache:
             system.cpu[i].connectAllPorts(system.tol2bus, system.membus)
         elif options.external_memory_system:

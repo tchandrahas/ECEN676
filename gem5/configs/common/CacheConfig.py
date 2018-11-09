@@ -187,10 +187,10 @@ def config_cache(options, system):
         system.cpu[i].createInterruptController()
         if options.l3cache:
             #system.cpu[i].connectAllPorts(system.tol2bus, system.tol3bus)
-            system.cpu.icache.connectCPU(system.cpu)
-            system.cpu.dcache.connectCPU(system.cpu)
-            system.cpu.icache.connectBus(system.tol2bus)
-            system.cpu.dcache.connectBus(system.tol2bus)
+            system.cpu[i].icache.connectCPU(system.cpu)
+            system.cpu[i].dcache.connectCPU(system.cpu)
+            system.cpu[i].icache.connectBus(system.tol2bus)
+            system.cpu[i].dcache.connectBus(system.tol2bus)
         elif options.l2cache:
             system.cpu[i].connectAllPorts(system.tol2bus, system.membus)
         elif options.external_memory_system:

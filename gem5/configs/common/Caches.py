@@ -71,7 +71,11 @@ class L2Cache(Cache):
     mshrs = 20
     tgts_per_mshr = 12
     write_buffers = 8
-    
+    def connectCPUSideBus(self, bus):
+        self.cpu_side = bus.master
+    def connectMemSideBus(self, bus):
+        self.mem_side = bus.slave
+        
 class L3Cache(Cache):
     assoc = 64
     tag_latency = 200

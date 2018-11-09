@@ -150,6 +150,8 @@ def config_cache(options, system):
                     system.cpu[i].dtb_walker_cache = dwalkcache
                     system.cpu[i].itb.walker.port = iwalkcache.cpu_side
                     system.cpu[i].dtb.walker.port = dwalkcache.cpu_side
+	            system.cpu[i].itb_walker_cache.mem_side = system.tol2bus.slave
+		    system.cpu[i].dtb_walker_cache.mem_side = system.tol2bus.slave
                     system.cpu[i]._cached_ports += ["itb_walker_cache.mem_side", \
                                                     "dtb_walker_cache.mem_side"]
                 else:
@@ -160,7 +162,6 @@ def config_cache(options, system):
                 if system.cpu[i].checker != NULL:
                     system.cpu[i]._cached_ports += ["checker.itb.walker.port", \
                                                     "checker.dtb.walker.port"]
-
             if options.memchecker:
                 # The mem_side ports of the caches haven't been connected yet.
                 # Make sure connectAllPorts connects the right objects.
@@ -187,10 +188,11 @@ def config_cache(options, system):
         system.cpu[i].createInterruptController()
         if options.l3cache:
             #system.cpu[i].connectAllPorts(system.tol2bus, system.tol3bus)
-            system.cpu[i].icache.connectCPU(system.cpu[i])
-            system.cpu[i].dcache.connectCPU(system.cpu[i])
+            #system.cpu[i].icache.connectCPU(system.cpu[i])
+            #system.cpu[i].dcache.connectCPU(system.cpu[i])
             system.cpu[i].icache.connectBus(system.tol2bus)
             system.cpu[i].dcache.connectBus(system.tol2bus)
+	    system.cpu[i].connectUncachedPorts(system.membus)
         elif options.l2cache:
             system.cpu[i].connectAllPorts(system.tol2bus, system.membus)
         elif options.external_memory_system:

@@ -95,10 +95,11 @@ def config_cache(options, system):
 
         system.tol2bus = L2XBar(clk_domain = system.cpu_clk_domain)
         system.tol3bus = L3XBar(clk_domain = system.cpu_clk_domain)
-        system.l2.cpu_side = system.tol2bus.master
-        system.l2.mem_side = system.tol3bus.slave
-        system.l3.cpu_side = system.tol3bus.master
-        system.l3.mem_side = system.membus.slave
+        # Make the Connections for L2 and L3 caches
+        system.l2.connectCPUSideBus(system.tol2bus)
+        system.l2.connectMemSideBus(system.tol3bus)
+        system.l3.connectCPUSideBus(system.tol3bus)
+        system.l3.connectMemSideBus(system.membus)
 
     if options.memchecker:
         system.memchecker = MemChecker()
@@ -164,7 +165,8 @@ def config_cache(options, system):
 
         system.cpu[i].createInterruptController()
         if options.l3cache:
-            system.cpu[i].connectAllPorts(system.tol3bus,system.tol2bus,system.membus)
+            system.cpu[i].icache.connectBus(system.tol2bus)
+            system.cpu[i].dcache.connectBus(system.tol2bus)
         elif options.l2cache:
             system.cpu[i].connectAllPorts(system.tol2bus, system.membus)
         elif options.external_memory_system:

@@ -137,8 +137,29 @@ def config_cache(options, system):
 
             # When connecting the caches, the clock is also inherited
             # from the CPU in question
-            system.cpu[i].addPrivateSplitL1Caches(icache, dcache,
-                                                  iwalkcache, dwalkcache)
+            #system.cpu[i].addPrivateSplitL1Caches(icache, dcache,
+            #                                      iwalkcache, dwalkcache)
+            system.cpu[i].icache = icache
+            system.cpu[i].dcache = dcache
+            system.cpu[i].icache_port = icache.cpu_side
+            system.cpu[i].dcache_port = dcache.cpu_side
+            system.cpu[i]._cached_ports = ['icache.mem_side', 'dcache.mem_side']
+            if buildEnv['TARGET_ISA'] in ['x86', 'arm']:
+                if iwc and dwc:
+                    system.cpu[i].itb_walker_cache = iwalkcache
+                    system.cpu[i].dtb_walker_cache = dwalkcache
+                    system.cpu[i].itb.walker.port = iwalkcache.cpu_side
+                    system.cpu[i].dtb.walker.port = dwalkcache.cpu_side
+                    system.cpu[i]._cached_ports += ["itb_walker_cache.mem_side", \
+                                                    "dtb_walker_cache.mem_side"]
+                else:
+                    system.cpu[i]._cached_ports += ["itb.walker.port", "dtb.walker.port"]
+
+                # Checker doesn't need its own tlb caches because it does
+                # functional accesses only
+                if system.cpu[i].checker != NULL:
+                    system.cpu[i]._cached_ports += ["checker.itb.walker.port", \
+                                                    "checker.dtb.walker.port"]
 
             if options.memchecker:
                 # The mem_side ports of the caches haven't been connected yet.
@@ -165,7 +186,11 @@ def config_cache(options, system):
 
         system.cpu[i].createInterruptController()
         if options.l3cache:
-            system.cpu[i].connectAllPorts(system.tol2bus, system.membus)
+            #system.cpu[i].connectAllPorts(system.tol2bus, system.tol3bus)
+            system.cpu.icache.connectCPU(system.cpu)
+            system.cpu.dcache.connectCPU(system.cpu)
+            system.cpu.icache.connectBus(system.tol2bus)
+            system.cpu.dcache.connectBus(system.tol2bus)
         elif options.l2cache:
             system.cpu[i].connectAllPorts(system.tol2bus, system.membus)
         elif options.external_memory_system:

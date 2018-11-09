@@ -54,10 +54,7 @@ class L1Cache(Cache):
     response_latency = 2
     mshrs = 4
     tgts_per_mshr = 20
-    def connectCPU(self,cpu):
-        raise NotImplementedError
-    def connectBus(self,bus):
-        self.mem_side = bus.slave
+
 class L1_ICache(L1Cache):
     is_read_only = True
     # Writeback clean lines as well
@@ -65,7 +62,7 @@ class L1_ICache(L1Cache):
 
 class L1_DCache(L1Cache):
     pass
-    
+
 class L2Cache(Cache):
     assoc = 8
     tag_latency = 20
@@ -74,10 +71,7 @@ class L2Cache(Cache):
     mshrs = 20
     tgts_per_mshr = 12
     write_buffers = 8
-    def connectCPUSideBus(self, bus):
-        self.cpu_side = bus.master
-    def connectMemSideBus(self, bus):
-        self.mem_side = bus.slave
+    
 class L3Cache(Cache):
     assoc = 64
     tag_latency = 200

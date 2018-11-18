@@ -193,7 +193,7 @@ def config_cache(options, system):
             #system.cpu[i].dcache.connectCPU(system.cpu[i])
             system.cpu[i].icache.connectBus(system.tol2bus)
             system.cpu[i].dcache.connectBus(system.tol2bus)
-	    system.cpu[i].connectUncachedPorts(system.membus)
+            system.cpu[i].connectUncachedPorts(system.membus)
         elif options.l2cache:
             system.cpu[i].connectAllPorts(system.tol2bus, system.membus)
         elif options.external_memory_system:

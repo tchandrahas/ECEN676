@@ -233,6 +233,7 @@ main = Environment(ENV=use_env, IMPLICIT_COMMAND_DEPENDENCIES=0)
 main.Decider('MD5-timestamp')
 main.root = Dir(".")         # The current directory (where this file lives).
 main.srcdir = Dir("src")     # The source directory
+main['SWIG'] = '/home/grads/c/chandrahas996/local/swig/bin/swig'
 
 main_dict_keys = main.Dictionary().keys()
 
@@ -495,7 +496,7 @@ global_vars = Variables(global_vars_file, args=ARGUMENTS)
 global_vars.AddVariables(
     ('CC', 'C compiler', environ.get('CC', main['CC'])),
     ('CXX', 'C++ compiler', environ.get('CXX', main['CXX'])),
-    ('SWIG', 'SWIG tool', environ.get('SWIG', main['SWIG'])),
+#    ('SWIG', 'SWIG tool', environ.get('SWIG', main['SWIG'])),
     ('PROTOC', 'protoc tool', environ.get('PROTOC', 'protoc')),
     ('BATCH', 'Use batch pool for build and tests', False),
     ('BATCH_CMD', 'Batch pool submission command name', 'qdo'),

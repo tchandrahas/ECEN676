@@ -33,20 +33,23 @@ from SimpleMemory import *
 
 class RubySystem(ClockedObject):
     type = 'RubySystem'
-    cxx_header = "mem/ruby/system/System.hh"
-    random_seed = Param.Int(1234, "random seed used by the simulation");
+    cxx_header = "mem/ruby/system/RubySystem.hh"
     randomization = Param.Bool(False,
-        "insert random delays on message enqueue times");
+        "insert random delays on message enqueue times (if True, all message \
+         buffers are enforced to have randomization; otherwise, a message \
+         buffer set its own flag to enable/disable randomization)");
     block_size_bytes = Param.UInt32(64,
         "default cache block size; must be a power of two");
     memory_size_bits = Param.UInt32(64,
         "number of bits that a memory address requires");
 
-    # Profiler related configuration variables
-    hot_lines = Param.Bool(False, "")
-    all_instructions = Param.Bool(False, "")
-    num_of_sequencers = Param.Int("")
     phys_mem = Param.SimpleMemory(NULL, "")
 
     access_backing_store = Param.Bool(False, "Use phys_mem as the functional \
         store and only use ruby for timing.")
+
+    # Profiler related configuration variables
+    hot_lines = Param.Bool(False, "")
+    all_instructions = Param.Bool(False, "")
+    num_of_sequencers = Param.Int("")
+    number_of_virtual_networks = Param.Unsigned("")

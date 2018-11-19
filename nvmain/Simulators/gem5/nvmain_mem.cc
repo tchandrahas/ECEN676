@@ -486,7 +486,7 @@ NVMainMemory::MemoryPort::recvTimingReq(PacketPtr pkt)
         addressFixUp = 0x40000000;
     }
 #elif THE_ISA == ARM_ISA
-    /* 
+    /*
      *  ARM regions are 2GB - 4GB followed by 34 GB - 64 GB. Work for up to
      *  34 GB of memory. Further regions from 512 GB - 992 GB.
      */
@@ -707,7 +707,7 @@ bool NVMainMemory::RequestComplete(NVM::NVMainRequest *req)
             ownerInstance->access(memRequest->packet);
         }
 
-        for( auto retryIter = masterInstance->allInstances.begin(); 
+        for( auto retryIter = masterInstance->allInstances.begin();
              retryIter != masterInstance->allInstances.end(); retryIter++ )
         {
             if( (*retryIter)->retryRead && (isRead || isWrite) )
@@ -835,7 +835,7 @@ void NVMainMemory::serialize(CheckpointOut &cp) const
 }
 
 
-void NVMainMemory::unserialize(CheckpointIn &cp)
+void NVMainMemory::unserialize(CheckpointIn &cp) 
 {
     if (masterInstance != this)
         return;
@@ -895,4 +895,3 @@ NVMainMemoryParams::create()
 {
     return new NVMainMemory(this);
 }
-

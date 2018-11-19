@@ -193,7 +193,7 @@ class NVMainMemory : public AbstractMemory, public NVM::NVMObject
     DrainState drain() override;
 
     void serialize(CheckpointOut &cp) const override;
-    void unserialize(CheckpointIn &cp) override;
+    void unserialize(CheckpointIn &cp) override; 
 
     MemoryPort port;
     static NVMainMemory *masterInstance;
@@ -213,4 +213,3 @@ class NVMainMemory : public AbstractMemory, public NVM::NVMObject
 };
 
 #endif
-

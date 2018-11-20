@@ -233,7 +233,7 @@ main = Environment(ENV=use_env, IMPLICIT_COMMAND_DEPENDENCIES=0)
 main.Decider('MD5-timestamp')
 main.root = Dir(".")         # The current directory (where this file lives).
 main.srcdir = Dir("src")     # The source directory
-main['SWIG'] = '/home/grads/c/chandrahas996/local/swig/bin/swig'
+main['SWIG'] = '../swig/bin/swig'
 
 main_dict_keys = main.Dictionary().keys()
 

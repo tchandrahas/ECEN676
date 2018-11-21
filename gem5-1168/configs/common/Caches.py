@@ -49,25 +49,55 @@ from m5.objects import *
 class L1Cache(Cache):
     assoc = 2
     hit_latency = 2
+    tag latncy = 2
     response_latency = 2
+    data_latency =2
     mshrs = 4
     tgts_per_mshr = 20
+    def connectCPU(self, cpu):
+        raise NotImplementedError
+    def connectBus(self, bus):
+        self.mem_side = bus.slave
 
 class L1_ICache(L1Cache):
     is_read_only = True
     # Writeback clean lines as well
     writeback_clean = True
+   def connectCPU(self, cpu):
+        self.cpu_side = cpu.icache_port
 
 class L1_DCache(L1Cache):
     pass
+    def connectCPU(self,cpu):
+        self.cpu_side = cpu.dcache_port
 
 class L2Cache(Cache):
     assoc = 8
+    tag_latency=20
     hit_latency = 20
     response_latency = 20
+    data_latency=20
     mshrs = 20
     tgts_per_mshr = 12
     write_buffers = 8
+    def connectCPUSideBus(self, bus):
+        self.cpu_side = bus.master
+    def connectMemSideBus(self, bus):
+        self.mem_side = bus.slave
+
+class L3Cache(Cache):
+    assoc = 64
+    tag_latency = 200
+    data_latency = 200
+    hit_latency=200
+    response_latency = 200
+    mshrs = 100
+    tgts_per_mshr = 4
+    write_buffers = 32
+    def connectCPUSideBus(self, bus):
+        self.cpu_side = bus.master
+    def connectMemSideBus(self, bus):
+        self.mem_side = bus.slave
 
 class IOCache(Cache):
     assoc = 8

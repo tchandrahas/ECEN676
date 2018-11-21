@@ -65,7 +65,7 @@ def config_cache(options, system):
             O3_ARM_v7aWalkCache
     else:
         dcache_class, icache_class, l2_cache_class,l3_cache_class, walk_cache_class = \
-            L1_DCache, L1_ICache, L2Cache, L3Cache None
+            L1_DCache, L1_ICache, L2Cache, L3Cache, None
 
         if buildEnv['TARGET_ISA'] == 'x86':
             walk_cache_class = PageTableWalkerCache

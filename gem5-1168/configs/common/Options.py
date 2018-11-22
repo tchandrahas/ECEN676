@@ -63,12 +63,6 @@ def _listPlatformTypes(option, opt, value, parser):
 # being used, and consequently no CPUs, but rather various types of
 # testers and traffic generators.
 def addNoISAOptions(parser):
-     # Check for extra nvmain configuration override options
-     for arg in sys.argv:
-         if arg[:9] == "--nvmain-":
-             parser.add_option(arg, type="string", default="NULL",
-                            help="Set NVMain configuration value for a parameter")
-def addNoISAOptions(parser):
     parser.add_option("-n", "--num-cpus", type="int", default=1)
     parser.add_option("--sys-voltage", action="store", type="string",
                       default='1.0V',
@@ -78,6 +72,10 @@ def addNoISAOptions(parser):
                       default='1GHz',
                       help = """Top-level clock for blocks running at system
                       speed""")
+   for arg in sys.argv:
+       if arg[:9] == "--nvmain-":
+           parser.add_option(arg, type="string", default="NULL",
+                          help="Set NVMain configuration value for a parameter")
 
     # Memory Options
     parser.add_option("--list-mem-types",

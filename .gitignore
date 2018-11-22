@@ -15,3 +15,17 @@ gem5/util/m5/*.o
 gem5/util/m5/*.a
 gem5/util/m5/m5
 gem5/system/arm/dt/*.dtb
+bc
+bfs
+cc
+converter
+pr
+sssp
+tc
+
+gapbs-master/test/out/*.out
+
+gapbs-master/benchmark/out/*.out
+gapbs-master/benchmark/graphs/*.sg
+gapbs-master/benchmark/graphs/*.wsg
+gapbs-master/benchmark/graphs/raw/*

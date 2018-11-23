@@ -92,7 +92,7 @@ def config_cache(options, system):
 
         system.tol2bus = L2XBar(clk_domain = system.cpu_clk_domain)
         system.tol3bus = L3XBar(clk_domain = system.cpu_clk_domain)
-        system.HMCbus  = HMCController(clk_domain = system.cpu_clk_domain)
+        #system.HMCbus  = HMCController(clk_domain = system.cpu_clk_domain)
         # Make the Connections for L2 and L3 caches
         system.l2.connectCPUSideBus(system.tol2bus)
         system.l2.connectMemSideBus(system.tol3bus)

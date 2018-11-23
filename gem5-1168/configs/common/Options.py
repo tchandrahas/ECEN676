@@ -72,7 +72,7 @@ def addNoISAOptions(parser):
                       default='1GHz',
                       help = """Top-level clock for blocks running at system
                       speed""")
-   for arg in sys.argv:
+    for arg in sys.argv:
        if arg[:9] == "--nvmain-":
            parser.add_option(arg, type="string", default="NULL",
                           help="Set NVMain configuration value for a parameter")

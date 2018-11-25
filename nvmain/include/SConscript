@@ -41,4 +41,5 @@ if 'NVMAIN_BUILD' in env:
 NVMainSource('NVMDataBlock.cpp')
 NVMainSource('NVMAddress.cpp')
 NVMainSource('NVMHelpers.cpp')
+NVMainSource('CommonMath.cpp')
 

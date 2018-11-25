@@ -34,41 +34,36 @@
 #include "Utils/Caches/CacheBank.h"
 #include "include/NVMHelpers.h"
 #include "src/EventQueue.h"
-
+#include "include/CommonMath.h"
 #include <iostream>
 #include <cassert>
 
 using namespace NVM;
 
-CacheBank::CacheBank( uint64_t rows, uint64_t sets, uint64_t assoc, uint64_t lineSize )
+CacheBank::CacheBank( uint64_t sets, uint64_t assoc, uint64_t lineSize )
 {
-    uint64_t r, i, j;
-
-    cacheEntry = new CacheEntry** [ rows ];
-    for( r = 0; r < rows; r++ )
+    uint64_t i, j;
+    cacheEntry = new CacheEntry* [ sets ];
+    for( i = 0; i < sets; i++ )
     {
-        cacheEntry[r] = new CacheEntry* [ sets ];
-        for( i = 0; i < sets; i++ )
+        cacheEntry[i] = new CacheEntry[assoc];
+        for( j = 0; j < assoc; j++ )
         {
-            cacheEntry[r][i] = new CacheEntry[ assoc ];
-            for( j = 0; j < assoc; j++ )
-            {
-                /* Clear valid bit, dirty bit, etc. */
-                cacheEntry[r][i][j].flags = CACHE_ENTRY_NONE;
-            }
+            /* Clear valid bit, dirty bit, etc. */
+            cacheEntry[i][j].flags = CACHE_ENTRY_NONE;
         }
     }
-
-    numRows = rows;
     numSets = sets;
     numAssoc = assoc;
     cachelineSize = lineSize;
-
+	tagOff = NVM::Log2(lineSize) + NVM::Log2(numSets);
+	//std::cout<<"tag offset is:"<<tagOff<<std::endl;
     state = CACHE_IDLE;
     stateTimer = 0;
 
     decodeClass = NULL;
     decodeFunc = NULL;
+	//std::cout<<"set default function"<<std::endl;
     SetDecodeFunction( this, 
             static_cast<CacheSetDecoder>(&NVM::CacheBank::DefaultDecoder) );
 
@@ -80,17 +75,11 @@ CacheBank::CacheBank( uint64_t rows, uint64_t sets, uint64_t assoc, uint64_t lin
 
 CacheBank::~CacheBank( )
 {
-    uint64_t i, r;
-
-    for( r = 0; r < numRows; r++ )
+    uint64_t i;
+    for( i = 0; i < numSets; i++ )
     {
-        for( i = 0; i < numSets; i++ )
-        {
-            delete [] cacheEntry[r][i];
-        }
-        delete [] cacheEntry[r];
+        delete [] cacheEntry[i];
     }
-
     delete [] cacheEntry;
 }
 
@@ -100,9 +89,12 @@ void CacheBank::SetDecodeFunction( NVMObject *dcClass, CacheSetDecoder dcFunc )
     decodeFunc = dcFunc;
 }
 
+//get cache set id
 uint64_t CacheBank::DefaultDecoder( NVMAddress &addr )
 {
-    return addr.GetCol() % numSets;
+	//std::cout<<"cache bank,default decoder:"<<std::hex<<addr.GetPhysicalAddress()<<std::endl;
+    return (addr.GetPhysicalAddress( ) >> 
+            (uint64_t)mlog2( (int)cachelineSize )) % numSets;
 }
 
 uint64_t CacheBank::SetID( NVMAddress& addr )
@@ -116,40 +108,63 @@ uint64_t CacheBank::SetID( NVMAddress& addr )
 
     //if( isMissMap )
     //    setID = (addr.GetPhysicalAddress( )) % numSets;
-
+	//std::cout<<"addr is:"<<std::hex<<addr.GetPhysicalAddress()<<std::endl;
     setID = (decodeClass->*decodeFunc)( addr );
-
     return setID;
 }
 
-CacheEntry *CacheBank::FindSet( NVMAddress& addr )
+CacheEntry *CacheBank::FindSet( NVMAddress& addr , uint64_t &set_id )
 {
     /*
      *  By default we'll just chop off the bits for the cacheline and use the
      *  least significant bits as the set address, and the remaining bits are 
      *  the tag bits.
      */
-    uint64_t setID = SetID( addr );
+    set_id = SetID( addr );
 
-    return cacheEntry[addr.GetRow()][setID];
+    return cacheEntry[set_id];
 }
 
-bool CacheBank::Present( NVMAddress& addr )
+CacheEntry *CacheBank::FindSet( NVMAddress& addr)
 {
-    CacheEntry *set = FindSet( addr );
-    bool found = false;
+	uint64_t set_id=0;
+	return FindSet(addr, set_id);
+}
 
+//return true if cache exist data stored in addr.GetPhysicalAddress()
+//LRU replacement algorithm 
+bool CacheBank::Present( NVMAddress& addr, uint64_t &set_id , uint64_t &assoc_id, bool set_dirty )
+{
+    CacheEntry *set = FindSet( addr, set_id );
+    bool found = false;
     for( uint64_t i = 0; i < numAssoc; i++ )
     {
-        if( set[i].address.GetPhysicalAddress( ) == addr.GetPhysicalAddress( ) 
+	 //std::cout<<"judge weather hit: set address: 0x"<<std::hex<<set[i].address.GetPhysicalAddress()<<"request address: 0x"<<std::hex<<addr.GetPhysicalAddress()<<std::endl;
+        //if( set[i].address.GetPhysicalAddress( ) == addr.GetPhysicalAddress( ) 
+         if( GetTag(set[i].address.GetPhysicalAddress()) == GetTag(addr.GetPhysicalAddress()) 
             && (set[i].flags & CACHE_ENTRY_VALID ) )
         {
+			//std::cout<<"judge weather hit: set address: 0x"<<std::hex<<set[i].address.GetPhysicalAddress()<<"request address: 0x"<<std::hex<<addr.GetPhysicalAddress()<<std::endl;
             found = true;
+			assoc_id = i; 
+			if(set_dirty)
+			{
+				set[i].flags |= CACHE_ENTRY_DIRTY;
+			}
             break;
         }
     }
-
     return found;
+}
+
+bool CacheBank::Present( NVMAddress& addr)
+{
+	uint64_t assoc, set;
+	return Present(addr ,set, assoc);
+}
+inline uint64_t CacheBank::GetTag(uint64_t addr)
+{
+	return addr>>tagOff; 	
 }
 
 bool CacheBank::SetFull( NVMAddress& addr )
@@ -160,7 +175,8 @@ bool CacheBank::SetFull( NVMAddress& addr )
     for( uint64_t i = 0; i < numAssoc; i++ )
     {
         /* If there is an invalid entry (e.g., not used) the set isn't full. */
-        if( !(set[i].flags & CACHE_ENTRY_VALID) )
+		//modified on Mon 2 Mar
+        if( !((set[i].flags & CACHE_ENTRY_VALID)||(set[i].flags & CACHE_ENTRY_DIRTY)||(set[i].flags & CACHE_ENTRY_EXAMPLE)) )
         {
             rv = false;
             break;
@@ -170,13 +186,15 @@ bool CacheBank::SetFull( NVMAddress& addr )
     return rv;
 }
 
+//it can install successfully only if cache set is not full,return true;
+//else return false
 bool CacheBank::Install( NVMAddress& addr, NVMDataBlock& data )
 {
     CacheEntry *set = FindSet( addr );
     bool rv = false;
 
     //assert( !Present( addr ) );
-
+	//std::cout<<"install 0x"<<std::hex<<addr.GetPhysicalAddress()<<std::endl;
     for( uint64_t i = 0; i < numAssoc; i++ )
     {
         if( !(set[i].flags & CACHE_ENTRY_VALID) )
@@ -188,7 +206,42 @@ bool CacheBank::Install( NVMAddress& addr, NVMDataBlock& data )
             break;
         }
     }
+    return rv;
+}
 
+bool CacheBank::FindAssoc( NVMAddress& addr, uint64_t &set_id , uint64_t &assoc_id )
+{
+    CacheEntry *set = FindSet( addr, set_id );
+    //assert( !Present( addr ) );
+	//std::cout<<"install 0x"<<std::hex<<addr.GetPhysicalAddress()<<std::endl;
+    for( uint64_t i = 0; i < numAssoc; i++ )
+    {
+        if( !(set[i].flags & CACHE_ENTRY_VALID) )
+        {
+			assoc_id = i;
+            break;
+        }
+    }
+    return true;
+}
+
+bool CacheBank::Install( NVMAddress& addr )
+{
+    CacheEntry *set = FindSet( addr );
+    bool rv = false;
+
+    //assert( !Present( addr ) );
+	//std::cout<<"install 0x"<<std::hex<<addr.GetPhysicalAddress()<<std::endl;
+    for( uint64_t i = 0; i < numAssoc; i++ )
+    {
+        if( !(set[i].flags & CACHE_ENTRY_VALID) )
+        {
+            set[i].address = addr;
+            set[i].flags |= CACHE_ENTRY_VALID; 
+            rv = true;
+            break;
+        }
+    }
     return rv;
 }
 
@@ -201,7 +254,7 @@ bool CacheBank::Read( NVMAddress& addr, NVMDataBlock *data )
 
     for( uint64_t i = 0; i < numAssoc; i++ )
     {
-        if( set[i].address.GetPhysicalAddress( ) == addr.GetPhysicalAddress( ) 
+        if( GetTag(set[i].address.GetPhysicalAddress()) == GetTag(addr.GetPhysicalAddress()) 
             && (set[i].flags & CACHE_ENTRY_VALID) )
         {
             *data = set[i].data;
@@ -289,40 +342,59 @@ bool CacheBank::UpdateData( NVMAddress& addr, NVMDataBlock& data )
             rv = true;
         }
     }
-
     return rv;
 }
+
 
 /* Return true if the victim data is dirty. */
-bool CacheBank::ChooseVictim( NVMAddress& addr, NVMAddress *victim )
+bool CacheBank::ChooseVictim( NVMAddress& addr, NVMAddress *victim ,
+							uint64_t &set_id , uint64_t assoc_id )
 {
     bool rv = false;
-    CacheEntry *set = FindSet( addr );
-
+    CacheEntry *set = FindSet( addr , set_id);
     assert( SetFull( addr ) );
     assert( set[numAssoc-1].flags & CACHE_ENTRY_VALID );
-
+	//the last one of a group as victim
     *victim = set[numAssoc-1].address;
-    
+	//std::cout<<"choose victim for:"<<std::hex<<addr.GetPhysicalAddress()<<"address of victim is"<<std::hex<<victim->GetPhysicalAddress()<<std::endl;
     if( set[numAssoc-1].flags & CACHE_ENTRY_DIRTY )
         rv = true;
-
+	assoc_id = numAssoc-1;
     return rv;
 }
 
+bool CacheBank::ChooseVictim( NVMAddress& addr, NVMAddress *victim)
+{
+	uint64_t set_id=0 , assoc_id=0;
+	return ChooseVictim(addr, victim , set_id , assoc_id);
+}
+
+bool CacheBank::Evict(NVMAddress &addr , uint64_t &set_id , uint64_t &assoc_id)
+{
+    CacheEntry *set = FindSet( addr , set_id);
+    assert( Present( addr ) );
+    for( uint64_t i = 0; i < numAssoc; i++ )
+    {
+        if( GetTag(set[i].address.GetPhysicalAddress()) == GetTag(addr.GetPhysicalAddress()) 
+            && (set[i].flags & CACHE_ENTRY_VALID) )
+        {
+            set[i].flags = CACHE_ENTRY_NONE;
+			assoc_id = i;
+            break;
+        }
+    }
+    return true;
+}
 
 bool CacheBank::Evict( NVMAddress& addr, NVMDataBlock *data )
 {
     bool rv;
     CacheEntry *set = FindSet( addr );
-
     assert( Present( addr ) );
-
     rv = false; 
-
     for( uint64_t i = 0; i < numAssoc; i++ )
     {
-        if( set[i].address.GetPhysicalAddress( ) == addr.GetPhysicalAddress( ) 
+        if( GetTag(set[i].address.GetPhysicalAddress()) == GetTag(addr.GetPhysicalAddress()) 
             && (set[i].flags & CACHE_ENTRY_VALID) )
         {
             if( set[i].flags & CACHE_ENTRY_DIRTY )
@@ -335,13 +407,10 @@ bool CacheBank::Evict( NVMAddress& addr, NVMDataBlock *data )
                 *data = set[i].data;
                 rv = false;
             }
-
             set[i].flags = CACHE_ENTRY_NONE;
-
             break;
         }
     }
-
     return rv;
 }
 
@@ -386,19 +455,16 @@ double CacheBank::GetCacheOccupancy( )
     uint64_t valid, total;
 
     valid = 0;
-    total = numRows*numSets*numAssoc;
+    total = numSets*numAssoc;
 
-    for( uint64_t rowIdx = 0; rowIdx < numRows; rowIdx++ )
+    for( uint64_t setIdx = 0; setIdx < numSets; setIdx++ )
     {
-        for( uint64_t setIdx = 0; setIdx < numSets; setIdx++ )
-        {
-            CacheEntry *set = cacheEntry[rowIdx][setIdx];
+        CacheEntry *set = cacheEntry[setIdx];
 
-            for( uint64_t assocIdx = 0; assocIdx < numAssoc; assocIdx++ )
-            {
-                if( set[assocIdx].flags & CACHE_ENTRY_VALID )
-                    valid++;
-            }
+        for( uint64_t assocIdx = 0; assocIdx < numAssoc; assocIdx++ )
+        {
+            if( set[assocIdx].flags & CACHE_ENTRY_VALID )
+                valid++;
         }
     }
 
@@ -483,16 +549,13 @@ bool CacheBank::IssueCommand( NVMainRequest *nreq )
                 << std::endl;
             break;
     }
-
     return true;
 }
 
 bool CacheBank::RequestComplete( NVMainRequest *req )
 {
     GetParent( )->RequestComplete( req );
-
     state = CACHE_IDLE;
-
     return true;
 }
 

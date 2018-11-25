@@ -39,16 +39,12 @@
 #include "include/NVMDataBlock.h"
 #include "src/NVMObject.h"
 #include "src/AddressTranslator.h"
-
+#include "include/CommonEnums.h"
 namespace NVM {
 
 typedef uint64_t (NVMObject::*CacheSetDecoder)(NVMAddress&);
 
-enum CacheState { CACHE_IDLE, CACHE_BUSY };
-enum CacheOperation { CACHE_NONE, CACHE_READ, CACHE_WRITE, 
-                      CACHE_SCRUB, CACHE_EVICT };
-
-struct CacheRequest
+/*struct CacheRequest
 {
     CacheOperation optype;
     NVMAddress address;
@@ -57,7 +53,7 @@ struct CacheRequest
     bool hit;
     NVMObject *owner;
     NVMainRequest *originalRequest;
-};
+};*/
 
 /* Must be powers of two! */
 enum { CACHE_ENTRY_NONE = 0,
@@ -76,21 +72,24 @@ struct CacheEntry
 class CacheBank : public NVMObject
 {
   public:
-    CacheBank( uint64_t rows, uint64_t sets, uint64_t assoc, uint64_t lineSize );
+    CacheBank( uint64_t sets, uint64_t assoc, uint64_t lineSize );
     ~CacheBank( );
 
     /* Return true if the address is in the cache. */
     bool Present( NVMAddress& addr );
+	bool Present( NVMAddress& addr, uint64_t &set, uint64_t &assoc , bool set_dirty = false);
 
     /* Return true if the address was placed in the cache. */
     bool Install( NVMAddress& addr, NVMDataBlock& data );
-
+	bool Install( NVMAddress& addr );
+	bool FindAssoc( NVMAddress& addr, uint64_t &set_id , uint64_t &assoc_id );
     /* Return true if the set is full, i.e. needs an eviction. */
     bool SetFull( NVMAddress& addr );
 
     /* Return true if evicted data is dirty data in *data. data is set to NULL
      * if the address was not found. */
     bool Evict( NVMAddress& addr, NVMDataBlock *data );
+    bool Evict( NVMAddress& addr , uint64_t &set_id , uint64_t &assoc_id);
 
     bool Read( NVMAddress& addr, NVMDataBlock *data );
     bool Write( NVMAddress& addr, NVMDataBlock& data );
@@ -115,22 +114,29 @@ class CacheBank : public NVMObject
     void Cycle( ncycle_t steps );
 
     bool ChooseVictim( NVMAddress& addr, NVMAddress *victim );
+	bool ChooseVictim( NVMAddress& addr, NVMAddress *victim ,
+							uint64_t &set_id , uint64_t assoc_id );
 
     void SetDecodeFunction( NVMObject *dcClass, CacheSetDecoder dcFunc );
 
-    uint64_t numRows, numSets, numAssoc, cachelineSize;
-    CacheEntry ***cacheEntry;
+    uint64_t numSets, numAssoc, cachelineSize;
+
+	unsigned tagOff;
+    CacheEntry **cacheEntry;
     uint64_t accessTime, stateTimer;
     uint64_t readTime, writeTime;
     CacheState state;
 
     CacheEntry *FindSet( NVMAddress& addr );
+    CacheEntry *FindSet( NVMAddress& addr, uint64_t &set_id);
     uint64_t SetID( NVMAddress& addr );
     bool isMissMap;
 
     CacheSetDecoder decodeFunc;
     NVMObject *decodeClass;
     uint64_t DefaultDecoder( NVMAddress& addr );
+	private:
+		inline uint64_t GetTag(uint64_t addr);
 };
 
 }; 

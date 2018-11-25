@@ -30,24 +30,14 @@
 *   Matt Poremba    ( Email: mrp5060 at psu dot edu
 *                     Website: http://www.cse.psu.edu/~poremba/ )
 *******************************************************************************/
-#ifndef __DRAM_CACHE_H__
-#define __DRAM_CAHCE_H__
-#include "MemControl/PredictorDRC/PredictorDRC.h"
-#include "MemControl/MemoryControllerFactory.h"
-#include "Utils/AccessPredictor/AccessPredictorFactory.h"
-#include "include/NVMHelpers.h"
-#include "NVM/nvmain.h"
-
-#include <iostream>
-#include <sstream>
-#include <cassert>
-
+#include "WayPredictDRC.h"
 using namespace NVM;
 
 WayPredictDRC::WayPredictDRC( )
 {
     //translator->GetTranslationMethod( )->SetOrder( 5, 1, 4, 3, 2, 6 );
     // initiate the member of the class
+  
     main_memory = NULL;
     dram_cache = NULL;
     miss_count = 0;
@@ -62,24 +52,24 @@ WayPredictDRC::WayPredictDRC( )
     //default set of dram cache
     cache_line_size = 64;
     cache_assoc = 1;	//default cache associate
-	  //default cache capacity is 128MB
+ 	  //default cache capacity is 128MB
     cache_capacity = NVM::Power( 2 ,27 );
-
+    
     read_miss = 0 ;
     write_miss = 0;
-
+    
     write_allocate=true;
     perfect_fill = true;
     drcQueueSize=32;
     InitQueues( 1 );
     drcQueue = &(transactionQueues[0]);
-
-    //set dram cache for main memory
+    
+        //set dram cache for main memory
     SetDRAMCache(dynamic_cast<AbstractDRAMCache*>(this));
     std::cout << "Constructor for Way Predict DRAM Cache executed sucessfully" << std::endl;
 }
 
-WayPredictorDRC::~WayPredictDRC( )
+WayPredictDRC::~WayPredictDRC( )
 {
   // deallocate the memory given to structures based on what mode is executed
 
@@ -115,7 +105,7 @@ WayPredictorDRC::~WayPredictDRC( )
  * 				   no-write-allocate ?( when write miss , write through main memory directly)
  *
  */
-void WayPredictDRC::SetConfig( Config *conf, bool createChildren )
+void WayPredictDRC::SetConfig( Config *conf, bool CreateChildren )
 {
   // Scan all the way associative cache related parameters
   std::string tmp_str;
@@ -188,7 +178,7 @@ bool WayPredictDRC::IssueFunctional(NVMainRequest* req)
 	return is_hit;
 }
 
-bool PredictorDRC::IssueAtomic( NVMainRequest *req )
+bool WayPredictDRC::IssueAtomic( NVMainRequest *req )
 {
   CacheBlock* tmp_blk;
   uint64_t set_id , way_id;
@@ -434,7 +424,7 @@ void WayPredictDRC::IssueToOtherModule(NVMainRequest* req)
 		}
 }
 
-void PredictorDRC::Cycle( ncycle_t steps )
+void WayPredictDRC::Cycle( ncycle_t steps )
 {
   NVMainRequest* next_req;
   //starved request first

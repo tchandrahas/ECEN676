@@ -25,9 +25,9 @@ class AbstractDRAMCache : public MemoryController
    *  here, since the backing memory is shared by
    *  all DRAM caches on every channel.
    */
-  virtual void SetMainMemory( NVMain *mm ) = 0;
+  virtual void SetMainMemory( NVMain *mm ){};
   virtual bool IssueFunctional( NVMainRequest *req ) = 0;
-  virtual bool IsIssuable( NVMainRequest *request, FailReason *reason = NULL ) = 0;
+  virtual bool IsIssuable( NVMainRequest *request, FailReason *reason = NULL ) {return true;};
 
 };
 

@@ -89,7 +89,7 @@ class CacheBank : public NVMObject
     /* Return true if evicted data is dirty data in *data. data is set to NULL
      * if the address was not found. */
     bool Evict( NVMAddress& addr, NVMDataBlock *data );
-    bool Evict( NVMAddress& addr , uint64_t &set_id , uint64_t &assoc_id);
+    bool Evict( NVMAddress& addr , uint64_t set_id , uint64_t assoc_id);
 
     bool Read( NVMAddress& addr, NVMDataBlock *data );
     bool Write( NVMAddress& addr, NVMDataBlock& data );
@@ -115,7 +115,7 @@ class CacheBank : public NVMObject
 
     bool ChooseVictim( NVMAddress& addr, NVMAddress *victim );
 	bool ChooseVictim( NVMAddress& addr, NVMAddress *victim ,
-							uint64_t &set_id , uint64_t assoc_id );
+							uint64_t set_id , uint64_t assoc_id );
 
     void SetDecodeFunction( NVMObject *dcClass, CacheSetDecoder dcFunc );
 

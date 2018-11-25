@@ -348,7 +348,7 @@ bool CacheBank::UpdateData( NVMAddress& addr, NVMDataBlock& data )
 
 /* Return true if the victim data is dirty. */
 bool CacheBank::ChooseVictim( NVMAddress& addr, NVMAddress *victim ,
-							uint64_t &set_id , uint64_t assoc_id )
+							uint64_t set_id , uint64_t assoc_id )
 {
     bool rv = false;
     CacheEntry *set = FindSet( addr , set_id);
@@ -359,7 +359,7 @@ bool CacheBank::ChooseVictim( NVMAddress& addr, NVMAddress *victim ,
 	//std::cout<<"choose victim for:"<<std::hex<<addr.GetPhysicalAddress()<<"address of victim is"<<std::hex<<victim->GetPhysicalAddress()<<std::endl;
     if( set[numAssoc-1].flags & CACHE_ENTRY_DIRTY )
         rv = true;
-	assoc_id = numAssoc-1;
+    // assoc_id = numAssoc-1;
     return rv;
 }
 
@@ -369,7 +369,7 @@ bool CacheBank::ChooseVictim( NVMAddress& addr, NVMAddress *victim)
 	return ChooseVictim(addr, victim , set_id , assoc_id);
 }
 
-bool CacheBank::Evict(NVMAddress &addr , uint64_t &set_id , uint64_t &assoc_id)
+bool CacheBank::Evict(NVMAddress &addr , uint64_t set_id , uint64_t assoc_id)
 {
     CacheEntry *set = FindSet( addr , set_id);
     assert( Present( addr ) );
@@ -379,7 +379,7 @@ bool CacheBank::Evict(NVMAddress &addr , uint64_t &set_id , uint64_t &assoc_id)
             && (set[i].flags & CACHE_ENTRY_VALID) )
         {
             set[i].flags = CACHE_ENTRY_NONE;
-			assoc_id = i;
+	    //assoc_id = i;
             break;
         }
     }

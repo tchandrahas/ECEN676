@@ -59,7 +59,7 @@ class WayPredictDRC :public AbstractDRAMCache
   public:
       WayPredictDRC( );
       virtual ~WayPredictDRC( );
-      virtual void SetConfig( Config *conf , bool CreateChildren = true);
+      virtual void SetConfig( Config *conf , bool CreateChildren = true)=0;
       virtual void SetMainMemory( NVMain* memory);
       virtual void SetDRAMCache( AbstractDRAMCache* dram_cache);
       //issue command related functions
@@ -81,7 +81,8 @@ class WayPredictDRC :public AbstractDRAMCache
       uint64_t GetDRAMHitTime();
       uint64_t GetDRAMMissTime();
 
-      NVMain* main_memory;	//point to main memory
+      public:
+	    NVMain* main_memory;	//point to main memory
       CacheImpl* dram_cache;	//point to dram cache
 
       uint64_t dram_hit_time, dram_miss_time;
@@ -101,7 +102,6 @@ class WayPredictDRC :public AbstractDRAMCache
       bool perfect_fill;	//fill first
       bool write_allocate;	//write allocate? no-write allocate?
       uint64_t drcQueueSize;
-   private:
       NVMTransactionQueue *drcQueue;
       std::map<NVMainRequest* , NVMainRequest*>outstanding_memfetch;
    };

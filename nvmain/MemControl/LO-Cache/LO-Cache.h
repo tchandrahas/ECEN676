@@ -39,21 +39,12 @@
 #include "Utils/Caches/CacheBank.h"
 #include "MemControl/DRAMCache/AbstractDRAMCache.h"
 
-
 #include <map>
 
-
 namespace NVM {
-
-
 #define DRC_MEMREAD tagGen->CreateTag("DRC_MEMREAD")
 #define DRC_FILL    tagGen->CreateTag("DRC_FILL")
-#define DRC_EVICT   tagGen->CreateTag("DRC_EVICT")
-
-
 class NVMain;
-
-
 class LO_Cache : public AbstractDRAMCache
 {
   public:
@@ -64,7 +55,6 @@ class LO_Cache : public AbstractDRAMCache
     void SetMainMemory( NVMain *mm );
 
     bool IssueAtomic( NVMainRequest *req );
-    bool IsIssuable( NVMainRequest *request, FailReason *reason = NULL );
     bool IssueCommand( NVMainRequest *req );
     bool IssueFunctional( NVMainRequest *req );
     bool RequestComplete( NVMainRequest *req );
@@ -89,19 +79,16 @@ class LO_Cache : public AbstractDRAMCache
 
     ncounter_t drc_hits, drc_miss;
     ncounter_t drc_evicts, drc_fills;
-    ncounter_t drc_dirty_evicts;
     ncounter_t rb_hits, rb_miss;
     ncounter_t starvation_precharges;
-
+	
+	ncounter_t read_hit = 0;
+	ncounter_t write_hit = 0;
     bool perfectFills;
     uint64_t max_addr;
     double drc_hitrate;
 
     std::map<NVMainRequest *, NVMainRequest *> outstandingFills;
 };
-
-
 };
-
-
 #endif
